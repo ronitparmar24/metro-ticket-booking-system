@@ -1,0 +1,811 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Metro Admin | Control Center</title>
+
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    
+    <link rel="stylesheet" href="https://unpkg.com/aos@2.3.1/dist/aos.css">
+    
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+    <style>
+        :root {
+            --primary: #667eea;
+            --secondary: #764ba2;
+            --accent: #00f2fe;
+            --glass-bg: rgba(255, 255, 255, 0.95);
+            --glass-border: 1px solid rgba(255, 255, 255, 0.2);
+            --sidebar-width: 280px;
+        }
+
+        body {
+            font-family: 'Poppins', sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            color: #2d3748;
+            overflow-x: hidden;
+        }
+
+        /* --- Animated Background Particles --- */
+        .particles {
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            z-index: 0;
+            pointer-events: none;
+        }
+        .particle {
+            position: absolute;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 50%;
+            animation: float 20s infinite ease-in-out;
+        }
+        @keyframes float {
+            0%, 100% { transform: translate(0, 0) rotate(0deg); }
+            50% { transform: translate(50px, -50px) rotate(180deg); }
+        }
+
+        /* --- Sidebar --- */
+        .sidebar {
+            width: var(--sidebar-width);
+            height: calc(100vh - 40px);
+            position: fixed;
+            left: 20px;
+            top: 20px;
+            background: var(--glass-bg);
+            backdrop-filter: blur(20px);
+            border-radius: 24px;
+            box-shadow: 0 20px 50px rgba(0,0,0,0.2);
+            z-index: 1000;
+            padding: 30px 0;
+            overflow-y: auto;
+            border: var(--glass-border);
+            transition: all 0.3s ease;
+        }
+
+        .brand-logo {
+            padding: 0 30px 30px;
+            font-size: 26px;
+            font-weight: 800;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            border-bottom: 1px solid rgba(0,0,0,0.05);
+            margin-bottom: 20px;
+        }
+
+        .section-title {
+            padding: 10px 30px;
+            font-size: 11px;
+            font-weight: 700;
+            text-transform: uppercase;
+            color: #a0aec0;
+            letter-spacing: 1px;
+        }
+
+        .nav-item {
+            padding: 14px 30px;
+            margin: 4px 15px;
+            border-radius: 12px;
+            cursor: pointer;
+            color: #718096;
+            font-weight: 600;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            display: flex;
+            align-items: center;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .nav-item i {
+            width: 24px;
+            margin-right: 12px;
+            font-size: 18px;
+            transition: transform 0.3s ease;
+        }
+
+        .nav-item:hover {
+            background-color: rgba(102, 126, 234, 0.1);
+            color: var(--primary);
+            transform: translateX(5px);
+        }
+
+        .nav-item:hover i {
+            transform: scale(1.2);
+        }
+
+        .nav-item.active {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            box-shadow: 0 10px 20px rgba(102, 126, 234, 0.3);
+        }
+
+        /* --- Main Content --- */
+        .main-content {
+            margin-left: calc(var(--sidebar-width) + 40px);
+            padding: 30px;
+            padding-right: 40px;
+            position: relative;
+            z-index: 1;
+        }
+
+        /* --- Glass Cards --- */
+        .card-glass {
+            background: var(--glass-bg);
+            border: var(--glass-border);
+            border-radius: 24px;
+            padding: 25px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            height: 100%;
+        }
+
+        .card-glass:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 20px 40px rgba(0,0,0,0.15);
+        }
+
+        /* --- Stat Widgets --- */
+        .stat-card {
+            border-radius: 24px;
+            padding: 25px;
+            color: white;
+            position: relative;
+            overflow: hidden;
+            box-shadow: 0 15px 30px rgba(0,0,0,0.2);
+            transition: transform 0.3s ease;
+        }
+        
+        .stat-card:hover { transform: translateY(-5px) scale(1.02); }
+
+        .stat-card.primary { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); }
+        .stat-card.secondary { background: linear-gradient(135deg, #84fab0 0%, #8fd3f4 100%); color: #1a4731; }
+        .stat-card.info { background: linear-gradient(135deg, #a18cd1 0%, #fbc2eb 100%); }
+        .stat-card.warning { background: linear-gradient(135deg, #ff9a9e 0%, #fecfef 99%, #fecfef 100%); color: #5e1b20; }
+
+        .stat-card .icon-bg {
+            position: absolute;
+            right: -20px;
+            bottom: -20px;
+            font-size: 120px;
+            opacity: 0.15;
+            transform: rotate(-15deg);
+        }
+
+        /* --- Custom Tables --- */
+        .table-glass {
+            width: 100%;
+            border-collapse: separate;
+            border-spacing: 0 10px;
+        }
+        .table-glass thead th {
+            font-weight: 700;
+            color: #718096;
+            text-transform: uppercase;
+            font-size: 12px;
+            border: none;
+            padding: 10px 20px;
+        }
+        .table-glass tbody tr {
+            background: white;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.02);
+            transition: transform 0.2s ease;
+        }
+        .table-glass tbody tr:hover {
+            transform: scale(1.01);
+            background: #f8f9fa;
+        }
+        .table-glass td {
+            padding: 15px 20px;
+            vertical-align: middle;
+            border: none;
+        }
+        .table-glass td:first-child { border-radius: 12px 0 0 12px; }
+        .table-glass td:last-child { border-radius: 0 12px 12px 0; }
+
+        /* --- View Sections --- */
+        .view-section { display: none; animation: fadeIn 0.5s ease; }
+        .view-section.active { display: block; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+
+        /* --- Custom Scrollbar --- */
+        ::-webkit-scrollbar { width: 8px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.3); border-radius: 4px; }
+        ::-webkit-scrollbar-thumb:hover { background: rgba(255,255,255,0.5); }
+        
+        .badge-soft-success { background: #d1fae5; color: #065f46; border-radius: 20px; padding: 5px 12px; }
+        .badge-soft-danger { background: #fee2e2; color: #991b1b; border-radius: 20px; padding: 5px 12px; }
+    </style>
+</head>
+
+<body>
+    <div class="particles" id="particles"></div>
+
+    <div class="sidebar">
+        <div class="brand-logo">
+            <i class="fas fa-bolt"></i> MetroAdmin
+        </div>
+        
+        <div class="section-title">Overview</div>
+        <div class="nav-item active" onclick="switchView('dashboard', this)">
+            <i class="fas fa-rocket"></i> Dashboard
+        </div>
+        <div class="nav-item" onclick="switchView('live', this)">
+            <i class="fas fa-satellite-dish"></i> Live Monitor
+        </div>
+
+        <div class="section-title mt-4">Management</div>
+        <div class="nav-item" onclick="switchView('stations', this)">
+            <i class="fas fa-map-marked-alt"></i> Stations
+        </div>
+        <div class="nav-item" onclick="switchView('users', this)">
+            <i class="fas fa-users-cog"></i> User Data
+        </div>
+        <div class="nav-item" onclick="switchView('analytics', this)">
+            <i class="fas fa-chart-pie"></i> Analytics
+        </div>
+
+        <div class="section-title mt-4">Control</div>
+        <div class="nav-item" onclick="switchView('notifications', this)">
+            <i class="fas fa-bell"></i> Announcements
+        </div>
+        <div class="nav-item" onclick="switchView('emergency', this)">
+            <i class="fas fa-radiation"></i> Emergency
+        </div>
+        
+        <div class="mt-5 px-4">
+            <div class="card-glass p-3 bg-light text-center">
+                <small class="text-muted d-block">Admin Logged In</small>
+                <div class="fw-bold text-dark mt-1">Super Admin</div>
+                <button class="btn btn-sm btn-danger w-100 mt-2 rounded-pill" onclick="location.href='/'">
+                    <i class="fas fa-sign-out-alt me-1"></i> Logout
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <div class="main-content">
+        
+        <div class="d-flex justify-content-between align-items-center mb-5" data-aos="fade-down">
+            <div>
+                <h2 class="fw-bold text-white mb-1" id="page-title">Dashboard Overview</h2>
+                <p class="text-white opacity-75 mb-0">Real-time system monitoring and control</p>
+            </div>
+            <div class="d-flex align-items-center gap-3">
+                <div class="card-glass py-2 px-3 d-flex align-items-center gap-2">
+                    <div class="spinner-grow spinner-grow-sm text-success" role="status"></div>
+                    <span class="fw-bold" style="color: #667eea">System Operational</span>
+                </div>
+                <div class="card-glass py-2 px-3 fw-bold">
+                    <i class="far fa-clock me-2"></i><span id="live-clock">12:00 PM</span>
+                </div>
+            </div>
+        </div>
+
+        <div id="dashboard" class="view-section active">
+            <div class="row g-4 mb-4">
+                <div class="col-xl-3 col-md-6" data-aos="fade-up" data-aos-delay="0">
+                    <div class="stat-card primary">
+                        <i class="fas fa-wallet icon-bg"></i>
+                        <h6 class="text-white-50 text-uppercase mb-2">Total Revenue</h6>
+                        <h2 class="fw-bold mb-0 display-5">₹<span id="total-revenue">0</span></h2>
+                        <div class="mt-3 text-white-50 small"><i class="fas fa-arrow-up"></i> 12% vs last week</div>
+                    </div>
+                </div>
+                <div class="col-xl-3 col-md-6" data-aos="fade-up" data-aos-delay="100">
+                    <div class="stat-card secondary">
+                        <i class="fas fa-ticket-alt icon-bg"></i>
+                        <h6 class="opacity-75 text-uppercase mb-2">Tickets Sold</h6>
+                        <h2 class="fw-bold mb-0 display-5" id="total-tickets">0</h2>
+                        <div class="mt-3 opacity-75 small">Lifetime bookings</div>
+                    </div>
+                </div>
+                <div class="col-xl-3 col-md-6" data-aos="fade-up" data-aos-delay="200">
+                    <div class="stat-card info">
+                        <i class="fas fa-users icon-bg"></i>
+                        <h6 class="text-white-50 text-uppercase mb-2">Active Users</h6>
+                        <h2 class="fw-bold mb-0 display-5" id="total-users">0</h2>
+                        <div class="mt-3 text-white-50 small"><i class="fas fa-user-plus"></i> Growing community</div>
+                    </div>
+                </div>
+                <div class="col-xl-3 col-md-6" data-aos="fade-up" data-aos-delay="300">
+                    <div class="stat-card warning">
+                        <i class="fas fa-coins icon-bg"></i>
+                        <h6 class="opacity-75 text-uppercase mb-2">Today's Income</h6>
+                        <h2 class="fw-bold mb-0 display-5">₹<span id="today-revenue">0</span></h2>
+                        <div class="mt-3 opacity-75 small">Updated just now</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="row g-4 mb-4">
+                <div class="col-lg-8" data-aos="fade-up">
+                    <div class="card-glass">
+                        <div class="d-flex justify-content-between align-items-center mb-4">
+                            <h5 class="fw-bold mb-0"><i class="fas fa-chart-line me-2 text-primary"></i>Revenue Trends</h5>
+                            <button class="btn btn-sm btn-outline-primary rounded-pill px-3">View Report</button>
+                        </div>
+                        <div style="height: 350px;">
+                            <canvas id="revenueChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-lg-4" data-aos="fade-up" data-aos-delay="100">
+                    <div class="card-glass">
+                        <h5 class="fw-bold mb-4"><i class="fas fa-server me-2 text-primary"></i>Server Health</h5>
+                        
+                        <div class="mb-4">
+                            <div class="d-flex justify-content-between mb-1 fw-bold text-muted small">
+                                <span>CPU LOAD</span>
+                                <span id="cpu-usage">0%</span>
+                            </div>
+                            <div class="progress" style="height: 10px; border-radius: 10px;">
+                                <div id="cpu-bar" class="progress-bar bg-primary" style="width: 0%"></div>
+                            </div>
+                        </div>
+
+                        <div class="mb-4">
+                            <div class="d-flex justify-content-between mb-1 fw-bold text-muted small">
+                                <span>RAM USAGE</span>
+                                <span id="ram-usage">0%</span>
+                            </div>
+                            <div class="progress" style="height: 10px; border-radius: 10px;">
+                                <div id="ram-bar" class="progress-bar bg-info" style="width: 0%"></div>
+                            </div>
+                        </div>
+
+                        <div class="p-3 rounded-3 mt-4" style="background: rgba(102, 126, 234, 0.1); border: 1px solid rgba(102, 126, 234, 0.2);">
+                            <div class="d-flex gap-3 align-items-center">
+                                <i class="fas fa-database fa-2x text-primary"></i>
+                                <div>
+                                    <h6 class="fw-bold mb-0">Database Status</h6>
+                                    <small class="text-success fw-bold">● Connected (MySQL)</small>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div id="live" class="view-section">
+            <div class="card-glass">
+                <h5 class="fw-bold mb-4"><i class="fas fa-satellite-dish me-2 text-danger"></i>Live Transaction Feed</h5>
+                <div id="live-feed" style="max-height: 600px; overflow-y: auto;">
+                    <div class="text-center text-muted p-5">Connecting to feed...</div>
+                </div>
+            </div>
+        </div>
+
+        <div id="stations" class="view-section">
+            <div class="card-glass">
+                <div class="d-flex justify-content-between align-items-center mb-4">
+                    <h5 class="fw-bold mb-0">Station Status & Crowding</h5>
+                    <button class="btn btn-primary rounded-pill btn-sm" onclick="loadStations()"><i class="fas fa-sync me-2"></i>Refresh</button>
+                </div>
+                <div id="stations-list" class="row g-3"></div>
+            </div>
+        </div>
+
+        <div id="users" class="view-section">
+            <div class="row g-4">
+                <div class="col-md-6">
+                    <div class="card-glass">
+                        <h5 class="fw-bold mb-4 text-primary">Top Wallet Balances</h5>
+                        <table class="table-glass">
+                            <thead><tr><th>User</th><th>Balance</th></tr></thead>
+                            <tbody id="top-users-table"></tbody>
+                        </table>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="card-glass">
+                        <h5 class="fw-bold mb-4 text-info">Top Spenders</h5>
+                        <table class="table-glass">
+                            <thead><tr><th>User</th><th>Total Spent</th></tr></thead>
+                            <tbody id="top-spenders-table"></tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div id="analytics" class="view-section">
+            <div class="card-glass">
+                <h5 class="fw-bold mb-4">Peak Hour Traffic Analysis</h5>
+                <div style="height: 400px;">
+                    <canvas id="peakHoursChart"></canvas>
+                </div>
+            </div>
+        </div>
+
+        <div id="notifications" class="view-section">
+            <div class="row g-4">
+                <div class="col-md-6">
+                    <div class="card-glass h-100">
+                        <h5 class="fw-bold mb-3"><i class="fas fa-bullhorn me-2 text-warning"></i>Broadcast Announcement</h5>
+                        <div class="form-floating mb-3">
+                            <textarea class="form-control border-0 bg-light" id="announcement-input" style="height: 120px" placeholder="msg"></textarea>
+                            <label>Type message for all users...</label>
+                        </div>
+                        <button class="btn btn-warning text-dark fw-bold w-100 rounded-pill py-2" onclick="createAnnouncement()">
+                            <i class="fas fa-paper-plane me-2"></i>Post Live
+                        </button>
+                        
+                        <div class="mt-4">
+                            <h6 class="fw-bold text-muted text-uppercase small">Recent History</h6>
+                            <div id="announcements-list" class="vstack gap-2 mt-2"></div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="card-glass h-100">
+                        <h5 class="fw-bold mb-3 text-danger"><i class="fas fa-exclamation-triangle me-2"></i>System Alerts</h5>
+                        <div id="alerts-list">
+                            <div class="text-center text-muted mt-5">No active system alerts.</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div id="emergency" class="view-section">
+            <div class="card-glass border-danger border-2 shadow-lg">
+                <h4 class="fw-bold text-danger mb-4"><i class="fas fa-biohazard me-2 fa-spin"></i>Emergency Control Center</h4>
+                <div class="d-flex gap-2 mb-4">
+                    <input type="text" id="emergency-input" class="form-control form-control-lg bg-light border-0" placeholder="ENTER EMERGENCY BROADCAST MESSAGE (e.g. EVACUATE STATION)">
+                    <button class="btn btn-danger btn-lg px-5 rounded-pill fw-bold" onclick="sendEmergencyAlert()">BROADCAST</button>
+                </div>
+                <div class="p-3 bg-danger-subtle rounded text-danger border border-danger">
+                    <i class="fas fa-info-circle me-2"></i> Using this feature will send a push notification to ALL active users immediately.
+                </div>
+                
+                <h5 class="fw-bold mt-5 mb-3">Active Incidents</h5>
+                <div id="emergency-list" class="row g-3"></div>
+            </div>
+        </div>
+
+        <div style="display:none;"><canvas id="reportChart"></canvas></div>
+
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
+
+    <script>
+        // Init Animations
+        AOS.init();
+        
+        // Background Particles
+        const particlesContainer = document.getElementById('particles');
+        for(let i=0; i<30; i++) {
+            const p = document.createElement('div');
+            p.className = 'particle';
+            p.style.left = Math.random() * 100 + '%';
+            p.style.top = Math.random() * 100 + '%';
+            p.style.width = Math.random() * 100 + 'px';
+            p.style.height = p.style.width;
+            p.style.animationDelay = Math.random() * 20 + 's';
+            p.style.opacity = Math.random() * 0.3;
+            particlesContainer.appendChild(p);
+        }
+
+        // Live Clock
+        setInterval(() => {
+            document.getElementById('live-clock').textContent = new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
+        }, 1000);
+
+        // API Wrapper
+        const API = {
+            call: async (endpoint) => {
+                try {
+                    const res = await fetch(endpoint);
+                    return await res.json();
+                } catch (e) { console.error('API Error:', e); return { success: false }; }
+            },
+            post: async (endpoint, data) => {
+                try {
+                    const res = await fetch(endpoint, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(data)
+                    });
+                    return await res.json();
+                } catch (e) { console.error('API Error:', e); return { success: false }; }
+            }
+        };
+
+        let charts = {};
+
+        // View Switcher
+        function switchView(viewId, element) {
+            document.querySelectorAll('.view-section').forEach(v => v.classList.remove('active'));
+            document.getElementById(viewId).classList.add('active');
+            
+            document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+            if(element) element.classList.add('active');
+
+            const titles = {
+                'dashboard': 'Dashboard Overview',
+                'live': 'Live Booking Monitor',
+                'stations': 'Station Management',
+                'users': 'User Analytics',
+                'analytics': 'Traffic Analysis',
+                'notifications': 'System Notifications',
+                'emergency': 'Emergency Control'
+            };
+            document.getElementById('page-title').textContent = titles[viewId] || 'Admin Portal';
+
+            // Function Router
+            if(viewId === 'live') loadLiveFeed();
+            if(viewId === 'stations') loadStations();
+            if(viewId === 'analytics') loadPeakHours();
+            if(viewId === 'users') loadUsers();
+            if(viewId === 'notifications') loadNotifications();
+            if(viewId === 'emergency') loadEmergency();
+        }
+
+        /* --- DASHBOARD FUNCTIONS --- */
+        async function loadDashboard() {
+            const data = await API.call('/api/admin/dashboard/stats');
+            if (data.success && data.stats) {
+                const s = data.stats;
+                
+                // Animation counter effect
+                animateValue('total-revenue', s.total_revenue);
+                document.getElementById('total-tickets').textContent = (s.total_tickets || 0).toLocaleString();
+                document.getElementById('total-users').textContent = (s.total_users || 0).toLocaleString();
+                document.getElementById('today-revenue').textContent = (s.today_revenue || 0).toLocaleString();
+            }
+        }
+
+        function animateValue(id, end) {
+            const obj = document.getElementById(id);
+            if(!obj) return;
+            let start = 0;
+            let duration = 1000;
+            let startTime = null;
+            function animation(currentTime) {
+                if (!startTime) startTime = currentTime;
+                const progress = Math.min((currentTime - startTime) / duration, 1);
+                obj.innerHTML = Math.floor(progress * end).toLocaleString();
+                if (progress < 1) requestAnimationFrame(animation);
+            }
+            requestAnimationFrame(animation);
+        }
+
+        async function loadRevenueChart() {
+            const data = await API.call('/api/admin/revenue/realtime');
+            if (data.success && data.daily) {
+                const ctx = document.getElementById('revenueChart').getContext('2d');
+                if (charts.revenue) charts.revenue.destroy();
+                
+                const gradient = ctx.createLinearGradient(0, 0, 0, 400);
+                gradient.addColorStop(0, 'rgba(102, 126, 234, 0.4)');
+                gradient.addColorStop(1, 'rgba(102, 126, 234, 0.0)');
+
+                charts.revenue = new Chart(ctx, {
+                    type: 'line',
+                    data: {
+                        labels: data.daily.map(d => d.date),
+                        datasets: [{
+                            label: 'Revenue',
+                            data: data.daily.map(d => d.revenue),
+                            borderColor: '#667eea',
+                            backgroundColor: gradient,
+                            borderWidth: 3,
+                            fill: true,
+                            tension: 0.4,
+                            pointBackgroundColor: '#fff',
+                            pointBorderColor: '#667eea',
+                            pointRadius: 5,
+                            pointHoverRadius: 7
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: { legend: { display: false } },
+                        scales: {
+                            y: { grid: { display: false } },
+                            x: { grid: { display: false } }
+                        }
+                    }
+                });
+            }
+        }
+
+        async function loadSystemHealth() {
+            const data = await API.call('/api/admin/system/health');
+            if (data.success) {
+                document.getElementById('cpu-usage').textContent = `${data.cpu}%`;
+                document.getElementById('cpu-bar').style.width = `${data.cpu}%`;
+                document.getElementById('ram-usage').textContent = `${data.ram}%`;
+                document.getElementById('ram-bar').style.width = `${data.ram}%`;
+            }
+        }
+
+        /* --- LIVE FEED --- */
+        async function loadLiveFeed() {
+            const data = await API.call('/api/admin/bookings/live');
+            if (data.success) {
+                document.getElementById('live-feed').innerHTML = data.bookings.map(b => `
+                    <div class="d-flex align-items-center p-3 mb-2 rounded-3 bg-white shadow-sm" style="transition: transform 0.2s;">
+                        <div class="me-3">
+                            <div class="rounded-circle d-flex align-items-center justify-content-center fw-bold" 
+                                 style="width:45px; height:45px; background:${b.cancelled ? '#fee2e2' : '#d1fae5'}; color: ${b.cancelled ? '#dc2626' : '#059669'}">
+                                <i class="fas ${b.cancelled ? 'fa-times' : 'fa-check'}"></i>
+                            </div>
+                        </div>
+                        <div class="flex-grow-1">
+                            <div class="d-flex justify-content-between">
+                                <h6 class="mb-0 fw-bold text-dark">${b.username}</h6>
+                                <span class="badge ${b.cancelled ? 'bg-danger' : 'bg-success'} rounded-pill">${b.cancelled ? 'Refunded' : 'Success'}</span>
+                            </div>
+                            <small class="text-muted">${b.source} <i class="fas fa-arrow-right mx-1 text-primary"></i> ${b.destination}</small>
+                        </div>
+                        <div class="text-end ms-3">
+                            <div class="fw-bold text-dark">₹${b.fare}</div>
+                            <small class="text-muted" style="font-size:10px">${new Date(b.bookingDate).toLocaleTimeString()}</small>
+                        </div>
+                    </div>
+                `).join('');
+            }
+        }
+
+        /* --- STATIONS --- */
+        async function loadStations() {
+            const data = await API.call('/api/admin/stations/status');
+            if (data.success) {
+                document.getElementById('stations-list').innerHTML = data.stations.map(s => `
+                    <div class="col-md-4">
+                        <div class="card-glass border-start border-5 ${s.status === 'crowded' ? 'border-danger' : s.status === 'moderate' ? 'border-warning' : 'border-success'}">
+                            <div class="d-flex justify-content-between align-items-start mb-2">
+                                <h6 class="fw-bold mb-0 text-dark">${s.station}</h6>
+                                <span class="badge ${s.status === 'crowded' ? 'bg-danger' : s.status === 'moderate' ? 'bg-warning text-dark' : 'bg-success'} rounded-pill">
+                                    ${s.status_text}
+                                </span>
+                            </div>
+                            <div class="d-flex justify-content-between text-muted mt-3">
+                                <small><i class="fas fa-user-friends me-1"></i>${s.total_passengers} pax</small>
+                                <small><i class="fas fa-subway me-1"></i>${s.departures + s.arrivals} Trips</small>
+                            </div>
+                        </div>
+                    </div>
+                `).join('');
+            }
+        }
+
+        /* --- USERS --- */
+        async function loadUsers() {
+            const data = await API.call('/api/admin/users/analytics');
+            if (data.success) {
+                const usersList = data.top_balance || [];
+                document.getElementById('top-users-table').innerHTML = usersList.map(u => `
+                    <tr>
+                        <td class="fw-bold text-dark"><img src="https://ui-avatars.com/api/?name=${u.username}&background=random" class="rounded-circle me-2" width="30">${u.username}</td>
+                        <td class="text-success fw-bold">₹${u.walletBalance.toFixed(2)}</td>
+                    </tr>
+                `).join('');
+
+                document.getElementById('top-spenders-table').innerHTML = data.top_spenders.map(u => `
+                    <tr>
+                        <td class="fw-bold text-dark">${u.username}</td>
+                        <td>₹${u.total_spent.toFixed(2)}</td>
+                    </tr>
+                `).join('');
+            }
+        }
+
+        /* --- PEAK HOURS --- */
+        async function loadPeakHours() {
+            const data = await API.call('/api/admin/analytics/peakhours');
+            const stats = data.hourly || []; 
+            if (data.success && stats.length > 0) {
+                const ctx = document.getElementById('peakHoursChart').getContext('2d');
+                if (charts.peakHours) charts.peakHours.destroy();
+                
+                charts.peakHours = new Chart(ctx, {
+                    type: 'bar',
+                    data: {
+                        labels: stats.map(h => `${h.hour}:00`),
+                        datasets: [{
+                            label: 'Bookings',
+                            data: stats.map(h => h.bookings),
+                            backgroundColor: '#764ba2',
+                            borderRadius: 10,
+                            barThickness: 20
+                        }]
+                    },
+                    options: { responsive: true, maintainAspectRatio: false, scales: { x: { grid: { display: false } } } }
+                });
+            }
+        }
+
+        /* --- NOTIFICATIONS --- */
+        async function loadNotifications() {
+            const data = await API.call('/api/admin/notifications/manage');
+            if (data.success) {
+                document.getElementById('announcements-list').innerHTML = data.announcements.map(a => `
+                    <div class="p-3 bg-white rounded shadow-sm border-start border-4 border-warning">
+                        <div class="small text-muted mb-1">${new Date(a.createdDate).toLocaleString()}</div>
+                        <div class="fw-bold text-dark">${a.message}</div>
+                    </div>
+                `).join('');
+            }
+            loadAlerts();
+        }
+
+        async function createAnnouncement() {
+            const message = document.getElementById('announcement-input').value;
+            if (message) {
+                await API.post('/api/admin/notifications/manage', { message });
+                document.getElementById('announcement-input').value = '';
+                loadNotifications();
+                alert('Announcement Posted!');
+            }
+        }
+
+        async function loadAlerts() {
+            const data = await API.call('/api/admin/alerts/system');
+            if (data.success && data.alerts.length > 0) {
+                document.getElementById('alerts-list').innerHTML = data.alerts.map(a => `
+                    <div class="alert alert-${a.severity === 'danger' ? 'danger' : 'warning'} d-flex align-items-center shadow-sm border-0">
+                        <i class="fas fa-exclamation-triangle me-3 fa-lg"></i>
+                        <div>
+                            <strong>${a.type}</strong><br>
+                            ${a.message}
+                        </div>
+                    </div>
+                `).join('');
+            }
+        }
+
+        /* --- EMERGENCY --- */
+        async function loadEmergency() {
+            const data = await API.call('/api/admin/emergency/alerts');
+            if (data.success) {
+                document.getElementById('emergency-list').innerHTML = data.incidents.map(i => `
+                    <div class="col-md-6">
+                        <div class="p-3 bg-danger text-white rounded shadow-lg border border-light">
+                            <div class="d-flex justify-content-between">
+                                <strong>${i.type.toUpperCase()}</strong>
+                                <span class="badge bg-white text-danger">ACTIVE</span>
+                            </div>
+                            <div class="mt-2">Location: <strong>${i.station}</strong></div>
+                            <small class="opacity-75">Time: ${new Date(i.reported).toLocaleTimeString()}</small>
+                        </div>
+                    </div>
+                `).join('');
+            }
+        }
+
+        async function sendEmergencyAlert() {
+            const message = document.getElementById('emergency-input').value;
+            if (message && confirm("ARE YOU SURE? This will alert all users.")) {
+                await API.post('/api/admin/emergency/alerts', { message, type: 'general' });
+                document.getElementById('emergency-input').value = '';
+                alert('🚨 EMERGENCY BROADCAST SENT SUCCESSFULLY');
+            }
+        }
+
+        /* --- INIT --- */
+        document.addEventListener('DOMContentLoaded', () => {
+            loadDashboard();
+            loadRevenueChart();
+            loadSystemHealth();
+            setInterval(loadDashboard, 10000);
+            setInterval(loadSystemHealth, 5000);
+        });
+    </script>
+</body>
+</html>
