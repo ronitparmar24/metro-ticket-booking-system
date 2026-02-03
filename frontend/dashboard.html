@@ -4,7 +4,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Dashboard - Metro Ticket System</title>
-    
+
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🚆</text></svg>">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
@@ -836,6 +837,78 @@
     transition: 0.2s;
 }
 .metro-station-dot:hover { transform: scale(1.5); }
+
+/* --- Add this to your existing <style> block --- */
+
+/* Facility Card Styling for Modal */
+.facility-card {
+    transition: all 0.3s ease;
+    border: 1px solid rgba(0,0,0,0.05);
+}
+.facility-card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+}
+
+/* Modern Input Group for Select + Button */
+.input-group-modern {
+    display: flex;
+    align-items: stretch;
+    border-radius: 15px;
+    overflow: hidden;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.05);
+}
+
+.input-group-modern .form-control-modern {
+    border-radius: 0;
+    border: none;
+    flex: 1;
+}
+
+.input-group-modern .input-group-text {
+    background: white;
+    border: none;
+    padding-left: 20px;
+    color: #667eea;
+}
+
+.input-group-modern .btn-info-modern {
+    background: #f8f9fa;
+    border: none;
+    border-left: 1px solid #e2e8f0;
+    padding: 0 20px;
+    color: #3b82f6;
+    transition: all 0.2s;
+}
+
+.input-group-modern .btn-info-modern:hover {
+    background: #eff6ff;
+    color: #2563eb;
+}
+
+/* Dark Mode Support for Modal */
+.dark-mode .modal-content {
+    background: #1e1e2d;
+    color: white;
+}
+.dark-mode .facility-card.bg-light {
+    background: rgba(255,255,255,0.05) !important;
+    border-color: rgba(255,255,255,0.1);
+}
+.dark-mode .facility-card i.text-muted {
+    color: rgba(255,255,255,0.4) !important;
+}
+.dark-mode .btn-close {
+    filter: invert(1) grayscale(100%) brightness(200%);
+}
+/* FORCE MODAL TO FRONT */
+.modal-backdrop {
+    z-index: 10000 !important; /* Higher than navbar */
+}
+.modal {
+    z-index: 10001 !important; /* Higher than backdrop */
+    background: rgba(0, 0, 0, 0.5); /* Fallback dimming */
+}
     </style>
 </head>
 <body>
@@ -1147,36 +1220,40 @@
     <div class="glass-card" data-aos="fade-up">
         <form id="bookTicketForm">
             <div class="row">
-                <!-- Source Station -->
-                <div class="col-md-6 mb-4">
-                    <div class="form-group-modern">
-                        <label class="form-label-modern">
-                            <i class="fas fa-map-marker-alt text-success me-2"></i>From Station
-                        </label>
-                        <div class="position-relative">
-                            <i class="form-icon fas fa-location-arrow"></i>
-                            <select class="form-control-modern" id="sourceStation" required>
-                                <option value="">Select Source Station</option>
-                            </select>
-                        </div>
-                    </div>
-                </div>
-                
-                <!-- Destination Station -->
-                <div class="col-md-6 mb-4">
-                    <div class="form-group-modern">
-                        <label class="form-label-modern">
-                            <i class="fas fa-map-marker-alt text-danger me-2"></i>To Station
-                        </label>
-                        <div class="position-relative">
-                            <i class="form-icon fas fa-map-marked-alt"></i>
-                            <select class="form-control-modern" id="destinationStation" required>
-                                <option value="">Select Destination Station</option>
-                            </select>
-                        </div>
-                    </div>
-                </div>
-            </div>
+    <div class="col-md-6 mb-4">
+        <label class="form-label-modern">
+            <i class="fas fa-map-marker-alt text-success me-2"></i>From Station
+        </label>
+        <div class="input-group-modern">
+            <span class="input-group-text">
+                <i class="fas fa-location-arrow"></i>
+            </span>
+            <select class="form-control-modern" id="sourceStation" required onchange="updateFare()">
+                <option value="">Select Source Station</option>
+            </select>
+            <button class="btn-info-modern" type="button" onclick="viewStationInfo('sourceStation')" title="View Station Facilities">
+                <i class="fas fa-info-circle fa-lg"></i>
+            </button>
+        </div>
+    </div>
+    
+    <div class="col-md-6 mb-4">
+        <label class="form-label-modern">
+            <i class="fas fa-map-marker-alt text-danger me-2"></i>To Station
+        </label>
+        <div class="input-group-modern">
+            <span class="input-group-text">
+                <i class="fas fa-map-marked-alt"></i>
+            </span>
+            <select class="form-control-modern" id="destinationStation" required onchange="updateFare()">
+                <option value="">Select Destination Station</option>
+            </select>
+            <button class="btn-info-modern" type="button" onclick="viewStationInfo('destinationStation')" title="View Station Facilities">
+                <i class="fas fa-info-circle fa-lg"></i>
+            </button>
+        </div>
+    </div>
+</div>
             
             <div class="row">
                 <!-- Number of Passengers -->
@@ -1921,8 +1998,82 @@
             </div>
         </div>
     </div>
+    
 </div>
+<div class="modal fade" id="stationInfoModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content border-0 shadow-lg" style="border-radius: 20px;">
+            <div class="modal-header border-0 pb-0">
+                <h5 class="modal-title fw-bold" style="font-size: 1.5rem;">
+                    <i class="fas fa-building me-2 text-primary"></i>
+                    <span id="modalStationName">Station Info</span>
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            
+            <div class="modal-body p-4">
+                <div class="mb-4">
+                    <span class="badge bg-success px-3 py-2 rounded-pill shadow-sm">
+                        <i class="fas fa-check-circle me-1"></i> Fully Operational
+                    </span>
+                    <span class="ms-2 text-muted small" id="modalStationId">ID: #001</span>
+                </div>
 
+                <div class="row g-3 text-center mb-4">
+                    <div class="col-4">
+                        <div class="p-3 rounded-3 bg-light facility-card" id="fac_wifi">
+                            <i class="fas fa-wifi fa-lg mb-2 text-muted"></i>
+                            <div class="small fw-bold">WiFi</div>
+                        </div>
+                    </div>
+                    <div class="col-4">
+                        <div class="p-3 rounded-3 bg-light facility-card" id="fac_parking">
+                            <i class="fas fa-parking fa-lg mb-2 text-muted"></i>
+                            <div class="small fw-bold">Parking</div>
+                        </div>
+                    </div>
+                    <div class="col-4">
+                        <div class="p-3 rounded-3 bg-light facility-card" id="fac_access">
+                            <i class="fab fa-accessible-icon fa-lg mb-2 text-muted"></i>
+                            <div class="small fw-bold">Access</div>
+                        </div>
+                    </div>
+                    <div class="col-4">
+                        <div class="p-3 rounded-3 bg-light facility-card" id="fac_wc">
+                            <i class="fas fa-restroom fa-lg mb-2 text-muted"></i>
+                            <div class="small fw-bold">Restroom</div>
+                        </div>
+                    </div>
+                    <div class="col-4">
+                        <div class="p-3 rounded-3 bg-light facility-card" id="fac_atm">
+                            <i class="fas fa-money-bill-wave fa-lg mb-2 text-muted"></i>
+                            <div class="small fw-bold">ATM</div>
+                        </div>
+                    </div>
+                    <div class="col-4">
+                        <div class="p-3 rounded-3 bg-light facility-card" id="fac_food">
+                            <i class="fas fa-utensils fa-lg mb-2 text-muted"></i>
+                            <div class="small fw-bold">Food</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="p-3 rounded-3" style="background: rgba(59, 130, 246, 0.1); border: 1px solid rgba(59, 130, 246, 0.2);">
+                    <div class="d-flex align-items-center">
+                        <div class="bg-primary text-white rounded-circle d-flex align-items-center justify-content-center me-3" 
+                             style="width: 50px; height: 50px;">
+                            <i class="fas fa-headset fa-lg"></i>
+                        </div>
+                        <div>
+                            <div class="small text-uppercase fw-bold text-primary opacity-75">Station Control</div>
+                            <div class="fs-5 fw-bold text-dark" id="modalContact">1800-11-2233</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
     <!-- Scripts -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
@@ -3406,6 +3557,91 @@ function markAsRead() {
         badge.style.display = 'none'; // Hides the badge immediately
         // Optional: Reset text to 0 so it stays 0 if it reappears
         badge.textContent = '0'; 
+    }
+}
+
+// Function to fetch and display station info
+// --- NEW FUNCTION: View Station Info ---
+// Function to fetch and display station info
+async function viewStationInfo(elementId) {
+    console.log("1. Info button clicked for:", elementId);
+    
+    // Get the selected station value
+    const selectElement = document.getElementById(elementId);
+    if (!selectElement) {
+        console.error("❌ Could not find dropdown with ID:", elementId);
+        return;
+    }
+    
+    const stationName = selectElement.value;
+    console.log("2. Selected station:", stationName);
+
+    if (!stationName) {
+        API.showAlert('⚠️ Please select a station first', 'warning');
+        return;
+    }
+
+    try {
+        console.log("3. Fetching data...");
+        const result = await API.call(`/stations/info/${stationName}`);
+        console.log("4. API Result:", result);
+        
+        if (result.success) {
+            const s = result.station;
+            
+            // CHECK: Do these elements exist?
+            const modalTitle = document.getElementById('modalStationName');
+            if (!modalTitle) {
+                console.error("❌ CRITICAL: Modal HTML missing! Check if modal code is in dashboard.html");
+                alert("Error: Station Info Modal HTML is missing from this page.");
+                return;
+            }
+
+            // 1. Update Text
+            modalTitle.textContent = s.name.replace(/_/g, ' ').toUpperCase();
+            document.getElementById('modalContact').textContent = s.contact_number || '1800-11-2233';
+            document.getElementById('modalStationId').textContent = "ID: #" + Math.floor(Math.random() * 1000); // Simulated ID
+            
+            // 2. Helper to Toggle Icons
+            const updateFacility = (id, isActive, activeColor) => {
+                const card = document.getElementById(id);
+                if (!card) return; // Skip if missing
+                
+                const icon = card.querySelector('i');
+                
+                if (isActive) {
+                    card.className = `p-3 rounded-3 text-white facility-card ${activeColor} shadow-sm`;
+                    if(icon) {
+                        icon.classList.remove('text-muted');
+                        icon.classList.add('text-white');
+                    }
+                } else {
+                    card.className = 'p-3 rounded-3 bg-light facility-card opacity-50'; // Grayed out
+                    if(icon) {
+                        icon.classList.remove('text-white');
+                        icon.classList.add('text-muted');
+                    }
+                }
+            };
+
+            // 3. Update Grid (Using data from DB)
+            // Note: s.has_wifi might be 1 or 0, which works as true/false in JS
+            updateFacility('fac_wifi', s.has_wifi, 'bg-primary');
+            updateFacility('fac_parking', s.has_parking, 'bg-warning');
+            updateFacility('fac_access', s.is_accessible, 'bg-info');
+            updateFacility('fac_wc', s.has_restroom, 'bg-success');
+            updateFacility('fac_atm', s.has_atm, 'bg-danger');
+            updateFacility('fac_food', true, 'bg-secondary'); // Default on
+
+            // 4. Show Modal (Safe Bootstrap Call)
+            console.log("5. Opening Modal...");
+            const modalEl = document.getElementById('stationInfoModal');
+            const myModal = new bootstrap.Modal(modalEl);
+            myModal.show();
+        }
+    } catch (error) {
+        console.error("❌ Error in viewStationInfo:", error);
+        API.showAlert('Failed to load details. See console (F12).', 'danger');
     }
 }
     </script>

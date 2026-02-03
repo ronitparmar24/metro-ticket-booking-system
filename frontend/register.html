@@ -264,12 +264,15 @@
                     <label for="confirmPassword">Confirm Password</label>
                 </div>
 
-                <div class="form-check mb-4">
-                    <input class="form-check-input" type="checkbox" id="agreeTerms" required>
-                    <label class="form-check-label text-muted small" for="agreeTerms">
-                        I agree to the <a href="#" class="text-primary text-decoration-none">Terms of Service</a>
-                    </label>
-                </div>
+                <div class="form-check mb-3">
+    <input class="form-check-input" type="checkbox" id="termsCheck" required>
+    <label class="form-check-label text-muted small" for="termsCheck">
+        I agree to the 
+        <a href="#" class="text-decoration-none text-primary fw-bold" data-bs-toggle="modal" data-bs-target="#termsModal">
+            Terms of Service
+        </a>
+    </label>
+</div>
 
                 <button type="submit" class="btn-register" id="registerBtn">
                     <span id="btnText">Create Account <i class="fas fa-arrow-right ms-2"></i></span>
@@ -391,5 +394,52 @@
             setTimeout(() => container.innerHTML = '', 4000);
         }
     </script>
+    <div class="modal fade" id="termsModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-scrollable modal-lg">
+        <div class="modal-content">
+            <div class="modal-header bg-light">
+                <h5 class="modal-title fw-bold">Terms of Service & Privacy Policy</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body px-4 py-3">
+                <h6 class="fw-bold text-uppercase text-primary mb-3">Effective Date: February 1, 2026</h6>
+                
+                <h5 class="fw-bold mt-4">1. Acceptance of Terms</h5>
+                <p class="text-muted small">By creating an account on MetroFlow, you agree to comply with these Terms of Service. These terms govern your use of our website, mobile application, and smart ticketing services.</p>
+
+                <h5 class="fw-bold mt-4">2. Ticketing & Travel Rules</h5>
+                <ul class="text-muted small">
+                    <li><strong>QR Code Validity:</strong> The generated QR code ticket is valid only for the specific travel date and route selected. It is non-transferable.</li>
+                    <li><strong>Entry/Exit:</strong> Users must scan their QR code at the entry and exit gates. Failure to scan at exit may result in a maximum fare penalty deduction from the MetroCard/Wallet.</li>
+                    <li><strong>Peak Hours:</strong> Fares may be subject to dynamic surge pricing during peak hours (08:00–10:00 and 17:00–19:00).</li>
+                </ul>
+
+                <h5 class="fw-bold mt-4">3. Refund & Cancellation Policy</h5>
+                <p class="text-muted small">Cancellations are subject to the following refund tiers based on the time of cancellation relative to the travel date:</p>
+                <ul class="text-muted small">
+                    <li><strong>> 24 Hours before travel:</strong> 80% of the fare will be refunded to your MetroFlow Wallet.</li>
+                    <li><strong>< 24 Hours before travel:</strong> 50% of the fare will be refunded.</li>
+                    <li><strong>After Travel Date:</strong> No refunds will be processed for expired tickets.</li>
+                </ul>
+
+                <h5 class="fw-bold mt-4">4. MetroCard & Wallet</h5>
+                <p class="text-muted small">The "Metro Smart Card" is a virtual prepaid instrument. Funds added to the Wallet are non-transferable to bank accounts and can only be used for MetroFlow services. Auto-recharge triggers when the balance falls below ₹50.</p>
+
+                <h5 class="fw-bold mt-4">5. User Conduct & Safety</h5>
+                <p class="text-muted small">Users are prohibited from carrying dangerous items, engaging in vandalism, or traveling without a valid ticket. MetroFlow reserves the right to suspend accounts found violating safety norms.</p>
+
+                <h5 class="fw-bold mt-4">6. Limitation of Liability</h5>
+                <p class="text-muted small">MetroFlow is not liable for delays caused by technical failures, power grid issues, or force majeure events. We strive for 99% uptime but do not guarantee uninterrupted service.</p>
+
+                <div class="alert alert-light border mt-4">
+                    <small><strong>Contact Us:</strong> For support or legal inquiries, please contact <strong>legal@metroflow.com</strong> or call our 24/7 helpline at <strong>1800-METRO-FLOW</strong>.</small>
+                </div>
+            </div>
+            <div class="modal-footer bg-light">
+                <button type="button" class="btn btn-primary px-4" data-bs-dismiss="modal">I Understand</button>
+            </div>
+        </div>
+    </div>
+</div>
 </body>
 </html>

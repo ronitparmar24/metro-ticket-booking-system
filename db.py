@@ -142,9 +142,25 @@ def setup_database():
             CREATE TABLE IF NOT EXISTS station_locations (
                 name VARCHAR(50) PRIMARY KEY,
                 x DOUBLE,
-                y DOUBLE
+                y DOUBLE,
+                has_wifi BOOLEAN DEFAULT FALSE,
+                has_parking BOOLEAN DEFAULT FALSE,
+                has_restroom BOOLEAN DEFAULT FALSE,
+                has_atm BOOLEAN DEFAULT FALSE,
+                is_accessible BOOLEAN DEFAULT FALSE,
+                contact_number VARCHAR(15) DEFAULT '1800-11-2233'
             )
         """)
+        # MIGRATION: If table exists but cols don't, add them (Safe Migration)
+        try:
+            cursor.execute("ALTER TABLE station_locations ADD COLUMN has_wifi BOOLEAN DEFAULT FALSE")
+            cursor.execute("ALTER TABLE station_locations ADD COLUMN has_parking BOOLEAN DEFAULT FALSE")
+            cursor.execute("ALTER TABLE station_locations ADD COLUMN has_restroom BOOLEAN DEFAULT FALSE")
+            cursor.execute("ALTER TABLE station_locations ADD COLUMN has_atm BOOLEAN DEFAULT FALSE")
+            cursor.execute("ALTER TABLE station_locations ADD COLUMN is_accessible BOOLEAN DEFAULT FALSE")
+            cursor.execute("ALTER TABLE station_locations ADD COLUMN contact_number VARCHAR(15) DEFAULT '1800-11-2233'")
+        except:
+            pass # Columns likely exist
         
         conn.commit()
         cursor.close()
@@ -158,7 +174,22 @@ def setup_database():
         if conn and conn.is_connected():
             conn.close()
 
-
+def get_station_details(station_name):
+    """Get full facility details for a specific station"""
+    conn = None
+    try:
+        conn = get_db_connection()
+        cursor = conn.cursor(dictionary=True)
+        sql = "SELECT * FROM station_locations WHERE name = %s"
+        cursor.execute(sql, (station_name,))
+        station = cursor.fetchone()
+        cursor.close()
+        return station
+    except Exception as e:
+        logger.error(f"Error fetching station details: {e}")
+        return None
+    finally:
+        if conn and conn.is_connected(): conn.close()
 # ============================================================================
 # USER OPERATIONS
 # ============================================================================
